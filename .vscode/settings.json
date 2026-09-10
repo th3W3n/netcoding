@@ -51,5 +51,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "streaming-data-lab.slnx"
+    "dotnet.defaultSolution": "netcoding.slnx"
 }

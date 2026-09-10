@@ -7,6 +7,8 @@ pixel RPG characters created by Sean Browning.
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
+using System;
 
 
 #region Assignment Instructions
@@ -75,26 +77,36 @@ static public class AssignmentPart1
 
     static public void SavePartyButtonPressed()
     {
-        foreach (PartyCharacter pc in GameContent.partyCharacters)
+        using (StreamWriter sw = new StreamWriter("team.txt"))
         {
-            Debug.Log("PC class id == " + pc.classID);
+            foreach (PartyCharacter pc in GameContent.partyCharacters)
+                sw.WriteLine($"{pc.classID},{pc.health},{pc.mana},{pc.strength},{pc.agility},{pc.wisdom}");
         }
     }
 
     static public void LoadPartyButtonPressed()
     {
         GameContent.partyCharacters.Clear();
-
-        PartyCharacter pc = new PartyCharacter(1, 10, 10, 10, 10, 10);
-        GameContent.partyCharacters.AddLast(pc);
-        pc = new PartyCharacter(2, 11, 11, 11, 11, 11);
-        GameContent.partyCharacters.AddLast(pc);
-        pc = new PartyCharacter(3, 12, 12, 12, 12, 12);
-        GameContent.partyCharacters.AddLast(pc);
-
+        using (StreamReader sr = new StreamReader("team.txt"))
+        {
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                string[] data = line.Split(',');
+                PartyCharacter pc = new PartyCharacter()
+                {
+                    classID = int.Parse(data[0]),
+                    health = int.Parse(data[1]),
+                    mana = int.Parse(data[2]),
+                    strength = int.Parse(data[3]),
+                    agility = int.Parse(data[4]),
+                    wisdom = int.Parse(data[5])
+                };
+                GameContent.partyCharacters.AddLast(pc);
+            }
+        }
         GameContent.RefreshUI();
     }
-
 }
 
 
