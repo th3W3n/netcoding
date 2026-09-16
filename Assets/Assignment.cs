@@ -80,7 +80,10 @@ static public class AssignmentPart1
         using (StreamWriter sw = new StreamWriter("team.txt"))
         {
             foreach (PartyCharacter pc in GameContent.partyCharacters)
-                sw.WriteLine($"{pc.classID},{pc.health},{pc.mana},{pc.strength},{pc.agility},{pc.wisdom}");
+            {
+                string equipment = string.Join(",", pc.equipment);
+                sw.WriteLine($"{pc.classID},{pc.health},{pc.mana},{pc.strength},{pc.agility},{pc.wisdom},{equipment}");
+            }
         }
     }
 
@@ -102,6 +105,12 @@ static public class AssignmentPart1
                     agility = int.Parse(data[4]),
                     wisdom = int.Parse(data[5])
                 };
+                int idx = 6;
+                while (idx < data.Length)
+                {
+                    pc.equipment.AddLast(int.Parse(data[idx]));
+                    idx++;
+                }
                 GameContent.partyCharacters.AddLast(pc);
             }
         }
@@ -167,8 +176,6 @@ static public class AssignmentPart2
         listOfPartyNames = new List<string>();
         listOfPartyNames.Add("sample 1");
         listOfPartyNames.Add("sample 2");
-        listOfPartyNames.Add("sample 3");
-
         GameContent.RefreshUI();
     }
 
@@ -179,11 +186,19 @@ static public class AssignmentPart2
 
     static public void LoadPartyDropDownChanged(string selectedName)
     {
+        Debug.Log(123);
         GameContent.RefreshUI();
     }
 
     static public void SavePartyButtonPressed()
     {
+        using (StreamWriter sw = new StreamWriter("team_multi.txt"))
+        {
+            foreach (PartyCharacter pc in GameContent.partyCharacters)
+                sw.WriteLine($"{pc.classID},{pc.health},{pc.mana},{pc.strength},{pc.agility},{pc.wisdom}");
+            sw.WriteLine("---");
+            listOfPartyNames.Add(GameContent.GetPartyNameFromInput());
+        }
         GameContent.RefreshUI();
     }
 
