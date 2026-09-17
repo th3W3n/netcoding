@@ -196,9 +196,9 @@ public class SystemManager : MonoBehaviour
     public void LoadDropDownChanged()
     {
         int menuIndex = loadPartyDropDown.GetComponent<Dropdown>().value;
-        List<Dropdown.OptionData> menuOptions = loadPartyDropDown.GetComponent<Dropdown>().options;
-        string value = menuOptions[menuIndex].text;
-        AssignmentPart2.LoadPartyDropDownChanged(value);
+        // List<Dropdown.OptionData> menuOptions = loadPartyDropDown.GetComponent<Dropdown>().options;
+        // string value = menuOptions[menuIndex].text;
+        AssignmentPart2.LoadPartyDropDownChanged(menuIndex);
     }
 
 
@@ -214,7 +214,8 @@ public class SystemManager : MonoBehaviour
 
     public void DeleteButtonPressed()
     {
-        AssignmentPart2.DeletePartyButtonPressed();
+        int menuIndex = loadPartyDropDown.GetComponent<Dropdown>().value;
+        AssignmentPart2.DeletePartyButtonPressed(menuIndex);
     }
 
     public string GetPartyNameFromInput()

@@ -130,7 +130,7 @@ static public class AssignmentPart1
 //  This will enable the needed UI/function calls for your to proceed with your assignment.
 static public class AssignmentConfiguration
 {
-    public const int PartOfAssignmentThatIsInDevelopment = 1;
+    public const int PartOfAssignmentThatIsInDevelopment = 2;
 }
 
 /*
@@ -174,8 +174,24 @@ static public class AssignmentPart2
     static public void GameStart()
     {
         listOfPartyNames = new List<string>();
-        listOfPartyNames.Add("sample 1");
-        listOfPartyNames.Add("sample 2");
+        if (File.Exists("team_multi.txt"))
+        {
+            using (StreamReader sr = new StreamReader("team_multi.txt"))
+            {
+                string line;
+                bool isLinePartyName = false;
+                while ((line = sr.ReadLine()) != null)
+                {
+                    if (line == "---")
+                        isLinePartyName = true;
+                    else if (isLinePartyName)
+                    {
+                        listOfPartyNames.Add(line);
+                        isLinePartyName = false;
+                    }
+                }
+            }
+        }
         GameContent.RefreshUI();
     }
 
@@ -184,26 +200,90 @@ static public class AssignmentPart2
         return listOfPartyNames;
     }
 
-    static public void LoadPartyDropDownChanged(string selectedName)
+    static public void LoadPartyDropDownChanged(int selectedIdx)
     {
-        Debug.Log(123);
+        GameContent.partyCharacters.Clear();
+        using (StreamReader sr = new StreamReader("team_multi.txt"))
+        {
+            string line;
+            bool isLinePartyName = false;
+            int parsedIdx = -1;
+            //even if no name input and saved, the empty line in the txt file is still "" rather than null
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (line == "---")
+                {
+                    parsedIdx++;
+                    isLinePartyName = true;
+                    continue;
+                }
+                if (parsedIdx == selectedIdx)
+                {
+                    if (isLinePartyName)
+                    {
+                        isLinePartyName = false;
+                        continue;
+                    }
+
+                    string[] data = line.Split(',');
+                    PartyCharacter pc = new PartyCharacter()
+                    {
+                        classID = int.Parse(data[0]),
+                        health = int.Parse(data[1]),
+                        mana = int.Parse(data[2]),
+                        strength = int.Parse(data[3]),
+                        agility = int.Parse(data[4]),
+                        wisdom = int.Parse(data[5])
+                    };
+                    int idx = 6;
+                    while (idx < data.Length)
+                    {
+                        pc.equipment.AddLast(int.Parse(data[idx]));
+                        idx++;
+                    }
+                    GameContent.partyCharacters.AddLast(pc);
+                }
+            }
+        }
         GameContent.RefreshUI();
     }
 
     static public void SavePartyButtonPressed()
     {
-        using (StreamWriter sw = new StreamWriter("team_multi.txt"))
+        string name = GameContent.GetPartyNameFromInput();
+        using (StreamWriter sw = new StreamWriter("team_multi.txt", true))
         {
-            foreach (PartyCharacter pc in GameContent.partyCharacters)
-                sw.WriteLine($"{pc.classID},{pc.health},{pc.mana},{pc.strength},{pc.agility},{pc.wisdom}");
             sw.WriteLine("---");
-            listOfPartyNames.Add(GameContent.GetPartyNameFromInput());
+            sw.WriteLine(name);
+            foreach (PartyCharacter pc in GameContent.partyCharacters)
+            {
+                string equipment = string.Join(",", pc.equipment);
+                sw.WriteLine($"{pc.classID},{pc.health},{pc.mana},{pc.strength},{pc.agility},{pc.wisdom},{equipment}");
+            }
         }
+        listOfPartyNames.Add(name);
         GameContent.RefreshUI();
     }
 
-    static public void DeletePartyButtonPressed()
+    static public void DeletePartyButtonPressed(int selectedIdx)
     {
+        List<string> linesToKeep = new List<string>();
+        using (StreamReader sr = new StreamReader("team_multi.txt"))
+        {
+            string line;
+            int parsedIdx = -1;
+            while ((line = sr.ReadLine()) != null)
+            {
+                if (line == "---") parsedIdx++;
+                if (parsedIdx != selectedIdx) linesToKeep.Add(line);
+            }
+        }
+        using (StreamWriter sw = new StreamWriter("team_multi.txt"))
+        {
+            foreach (string line in linesToKeep)
+                sw.WriteLine(line);
+        }
+        listOfPartyNames.RemoveAt(selectedIdx);
         GameContent.RefreshUI();
     }
 
